@@ -1,0 +1,17 @@
+9:56AM INF home/manu/vm-agent/vm-agent/utils/logging/logger.go:59 > logging configured fileLogging=true fileName=service.log jsonLogOutput=false logDirectory=log maxAgeInDays=5 maxBackups=5 maxSizeMB=10
+9:56AM PNC home/manu/vm-agent/vm-agent/main.go:55 > Error reading config file: Config File "" Not Found in ""
+
+panic: Error reading config file: Config File "" Not Found in ""
+
+
+goroutine 1 [running]:
+github.com/rs/zerolog.(*Logger).Panic.func1({0xc0003aa800, 0x0})
+	/home/manu/go/pkg/mod/github.com/rs/zerolog@v1.20.0/log.go:345 +0x2d
+github.com/rs/zerolog.(*Event).msg(0xc000380840, {0xc0003aa800, 0x3a})
+	/home/manu/go/pkg/mod/github.com/rs/zerolog@v1.20.0/event.go:147 +0x2b8
+github.com/rs/zerolog.(*Event).Msgf(0xc000380840, {0x87b67d, 0x40ea07}, {0xc00029fee0, 0x7e1cc0, 0x1})
+	/home/manu/go/pkg/mod/github.com/rs/zerolog@v1.20.0/event.go:127 +0x4e
+main.loadConfig()
+	/home/manu/vm-agent/vm-agent/main.go:55 +0x23e
+main.main()
+	/home/manu/vm-agent/vm-agent/main.go:33 +0xb7

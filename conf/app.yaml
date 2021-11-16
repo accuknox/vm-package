@@ -1,0 +1,30 @@
+
+# Application specific configurations
+application:
+  name: vm-agent
+
+logging:
+  level: ERROR
+
+accuknox:
+  createInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/create-instance
+  updateInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/update-instance
+  findInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/list-instance
+  #createInstanceLink: http://127.0.0.1:8087/vm-management/api/v1/create-instance
+  #updateInstanceLink: http://127.0.0.1:8087/vm-management/api/v1/update-instance
+  #findInstanceLink: http://127.0.0.1:8087/vm-management/api/v1/list-instance
+  
+  
+  
+  "sudo bash scripts/vm_onboarding.sh -n test-crd -hn avinash-host -vpc vpc -t abc xyz test-label test value  -ig 312 -tid 165"
+  
+  
+  
+  sudo bash script-vm-developing.sh -n test-para -hn manu-host -vpc vpc -t abc xyz test-label test value  -ig 309 -tid 51
+  
+  
+   script-vm-developing.sh  
+   
+   
+   
+   sudo bash script-vm-developing.sh -n test-para -hn manu-host -vpc vpc -t abc xyz testlabel testvalue  -ig 309 -tid 51
