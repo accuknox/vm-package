@@ -7,12 +7,12 @@ logging:
   level: ERROR
 
 accuknox:
-  createInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/create-instance
-  updateInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/update-instance
-  findInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/list-instance
-  #createInstanceLink: http://127.0.0.1:8087/vm-management/api/v1/create-instance
-  #updateInstanceLink: http://127.0.0.1:8087/vm-management/api/v1/update-instance
-  #findInstanceLink: http://127.0.0.1:8087/vm-management/api/v1/list-instance
+  #createInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/create-instance
+  #updateInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/update-instance
+  #findInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/list-instance
+  createInstanceLink: http://127.0.0.1:8087/vm-management/api/v1/create-instance
+  updateInstanceLink: http://127.0.0.1:8087/vm-management/api/v1/update-instance
+  findInstanceLink: http://127.0.0.1:8087/vm-management/api/v1/list-instance
   
   
   
