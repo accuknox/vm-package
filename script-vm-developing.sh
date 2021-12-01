@@ -7,19 +7,38 @@ function unsupported {
 function install_rpm {
 	echo "* Installing vm agent-rpm"
 }
-
+function file_check {
+	echo "* Preparing"
+	if [ -s /opt/vm-agent/k-script.sh ]
+	then
+		cd /opt/vm-agent/
+		echo "* installing kube-armor"
+		sudo bash ./k-script.sh
+		return
+	else
+		sleep 2
+		file_check
+	fi
+}
 function install_deb {
+	if [[ $(which docker) && $(docker --version) ]]; then
+	    echo "Docker is installed!!!"
+	else
+	  echo "Failed: Docker is not installed!!!"
+	  exit 1
+	fi
 	a=$(wget -qO- ifconfig.me/ip)
 	echo "external_ip: "$a >> /opt/vm-agent/instance.yaml
 	b=$(hostname -I | awk '{print $1}')
 	echo "internal_ip: "$b >> /opt/vm-agent/instance.yaml
 	export DEBIAN_FRONTEND=noninteractive
-	echo "* Installing  agent-deb"
+	echo "* Installing  vm-agent"
 	chmod 777 vm-agent
 	sudo setsid ./vm-agent >log/service.log 2>&1 < log/service.log &
 	#./vm-agent&
 	#sudo screen -d -m vm-agent
         #./vm-agent
+        file_check
 	echo "success"
 	#curl -o newfile https://raw.githubusercontent.com/manureddy7143/linuxscript/main/hello
 
@@ -86,6 +105,8 @@ case ${key} in
 			sudo mkdir /opt/vm-agent
 			sudo touch /opt/vm-agent/instance.yaml
 			chmod 777 /opt/vm-agent/instance.yaml
+			sudo touch /opt/vm-agent/k-script.yaml
+			chmod 777 /opt/vm-agent/k-script.yaml
 			echo "instance_name: "$VM_NAME > /opt/vm-agent/instance.yaml
 			
 		else
@@ -276,4 +297,3 @@ elif [ -f /etc/system-release-cpe ]; then
 else
 	unsupported
 fi
-
