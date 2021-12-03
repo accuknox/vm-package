@@ -21,4 +21,4 @@ Commands to run and install vm-agent,kube-armor in vms.
 
 2.tar xf vm-package.tar.xz 
 
-3.sudo bash script-vm-developing.sh -n  <instance name>  -hn  <host name>  -t  <key1> <value1> <key2> <value2>  -ig  <instance_group_id>  -tid <workspace_id> -vpc <default_vpc>
+3.sudo bash script-vm-developing.sh -n  <instance name>   -hn   <host name>   -t  <key1> <value1> <key2> <value2>  -ig  <instance_group_id>  -tid <workspace_id> -vpc <default_vpc>
