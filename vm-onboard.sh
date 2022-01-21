@@ -14,9 +14,10 @@ function file_check {
 		cd /opt/vm-agent/
 		echo "* installing kube-armor"
 		sudo bash ./k-script.sh
-		return
+		echo "success"
+		exit 0
 	else
-		sleep 2
+		sleep 3
 		file_check
 	fi
 }
@@ -32,14 +33,36 @@ function install_deb {
 	b=$(hostname -I | awk '{print $1}')
 	echo "internal_ip : $b" >> /opt/vm-agent/instance.yaml
 	export DEBIAN_FRONTEND=noninteractive
+	FILE=/lib/systemd/system/vm-agent.service
+	if [ -f "$FILE" ]; then
+		echo "test"
+		sudo rm -f  /lib/systemd/system/vm-agent.service
+	fi
+	sudo touch /lib/systemd/system/vm-agent.service
+	#chmod 777 /lib/systemd/system/vm-agent.service
 	echo "* Executing  Vm-Agent"
+	echo "[Unit]
+Description=vm-agent
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=/opt/vm-agent
+ExecStart=/opt/vm-agent/vm-agent
+
+[Install]
+WantedBy=multi-user.target" | sudo tee -a  /lib/systemd/system/vm-agent.service >> /dev/null
+	sudo systemctl unmask vm-agent.service
+	sudo systemctl enable vm-agent
 	chmod 777 vm-agent
-	sudo setsid ./vm-agent >log/service.log 2>&1 < log/service.log &
+	sudo service vm-agent start
+	#sudo setsid ./vm-agent >log/service.log 2>&1 < log/service.log &
 	##./vm-agent&
 	#sudo screen -d -m vm-agent
         #./vm-agent
         file_check
-	echo "success"
 
 }
 function is_valid_value {
@@ -58,19 +81,24 @@ function is_int {
 	fi
 }
 function help {
-	echo "Usage: $(basename "${0}") "
-	echo "  -n   | --vm_name        <value>"
-	echo "  -t   | --tags           <key>  <value>"  
-    echo "  -ig  | --instance_group <value>"
-	echo "  -hd  | --host_domain    <value>"
-	echo "  -vpc | --vpc            <value> (Optional)"
-    echo "  -h   | --help "
-	echo "NOTE:"
-    echo "     Vm_name,Tags,Instance_group_id and Host_Domain are mandatory"
+	echo "  Usage: sudo bash ./$(basename "${0}") [Options] values "
+	echo ''
+	echo "        Options                   Values                             Description"
+	echo ''
+	echo "      -n   | --vm_name           <value>               A user input for instance name "
+	echo "      -t   | --tags              <key>  <value>        labels that user want to add while onboarding"       
+    echo "      -ig  | --instance_group_id <value>               Instance_group_id generated from ui"
+	echo "      -hd  | --host_domain       <value>               Domain address of vm(control plane)"              
+	echo "      -tid | --tenant_id         <value>               Workspace_id generated from ui"
+	echo "      -vpc | --vpc               <value> (Optional)"
+    echo "      -h   | --help "
+	echo " "
+    echo "  NOTE: Vm_name,Tags,Instance_group_id,Tenant_id and Host_Domain are mandatory"
 	exit 1
 }
 #main
 set -e
+
 #Checking Mandatory Arguments
 echo "* Checking Mandatory Arguments"
 declare -a pages
@@ -95,7 +123,7 @@ do
      fi
    done
    if [ $k -eq 0 ] ; then 
-      echo "Error: "
+      echo "Error: Bad Input"
       help
       exit 1
    fi
@@ -112,6 +140,10 @@ sudo touch /opt/vm-agent/instance.yaml
 chmod 777 /opt/vm-agent/instance.yaml
 sudo touch /opt/vm-agent/k-script.sh
 chmod 777 /opt/vm-agent/k-script.sh
+#moving files to opt folder
+cp vm-agent /opt/vm-agent/
+cp -R conf /opt/vm-agent/
+cp -R log  /opt/vm-agent/
 a=${#}
 #Check for mandatory field values
 while [[ ${#} -gt 0 ]]
