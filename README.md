@@ -12,7 +12,7 @@ Then, the onboarding process completes by listing instances in the workspace.
  
 Source for the VM-Agent package:
 
-https://github.com/accuknox/vm-package/raw/main/vm-package.tar.xz 
+https://github.com/accuknox/vm-package/blob/dev-non-gke/vm-package.tar.xz
 
 
 Commands to run and install vm-agent,kube-armor in vms.
@@ -21,4 +21,6 @@ Commands to run and install vm-agent,kube-armor in vms.
 
 2.tar xf vm-package.tar.xz 
 
-3.sudo bash script-vm-developing.sh -n  <instance name>   -hn   <host name>   -t  <key1> <value1> <key2> <value2>  -ig  <instance_group_id>  -tid <workspace_id> -vpc <default_vpc>
+3.Use sudo bash vm-onboard.sh -h  for help.
+
+4. sudo bash vm-onboard.sh  -n <instance-name> -t <key> <value> -ig <instance_group_id> -tid <workspace_id> -hd <host-domain>
