@@ -12,12 +12,12 @@ Then, the onboarding process completes by listing instances in the workspace.
  
 Source for the VM-Agent package:
 
-https://github.com/accuknox/vm-package/blob/dev-non-gke/vm-package.tar.xz
+https://github.com/accuknox/vm-package/raw/dev-non-gke/vm-package.tar.xz
 
 
 Commands to run and install vm-agent,kube-armor in vms.
 
-1.wget https://github.com/accuknox/vm-package/raw/main/vm-package.tar.xz
+1.wget https://github.com/accuknox/vm-package/raw/dev-non-gke/vm-package.tar.xz
 
 2.tar xf vm-package.tar.xz 
 
