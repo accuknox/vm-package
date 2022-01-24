@@ -6,11 +6,14 @@ application:
 logging:
   level: ERROR
 
+dataCount: 50
+
 accuknox:
   createInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/create-instance
   updateInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/update-instance
   findInstanceLink: https://api-dev.accuknox.com/vm-management/api/v1/list-instance
   createLabelLink: https://api-dev.accuknox.com/vm-management/api/v1/create-label
+  CreateProcess: https://api-dev.accuknox.com/vm-management/api/v1/create-process
   getScriptLink: /pea/api/v1/policy-enf-agent/get-vm-script
   # createInstanceLink: http://127.0.0.1:8087/vm-management/api/v1/create-instance
   # updateInstanceLink: http://127.0.0.1:8087/vm-management/api/v1/update-instance
