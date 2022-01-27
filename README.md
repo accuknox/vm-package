@@ -23,7 +23,7 @@ Commands to run and install vm-agent,kube-armor in vms.
 
 3.Use sudo bash vm-onboard.sh -h  for help.
 
-4.sudo bash vm-onboard.sh  -n <instance-name> -t <key> <value> -ig <instance_group_id> -tid <workspace_id> -hd <host-domain>
+4.sudo bash vm-onboard.sh  -n <instance-name> -t  <key>  <value> -ig <instance_group_id> -tid <workspace_id>  -hd  <host-domain>
  
  
  
