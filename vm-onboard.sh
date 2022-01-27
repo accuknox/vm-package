@@ -40,6 +40,7 @@ function install_deb {
 	fi
 	sudo touch /lib/systemd/system/vm-agent.service
 	#chmod 777 /lib/systemd/system/vm-agent.service
+	sudo ./vm-agent onboard
 	echo "* Executing  Vm-Agent"
 	echo "[Unit]
 Description=vm-agent
