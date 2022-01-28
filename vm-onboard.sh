@@ -8,15 +8,16 @@ function install_rpm {
 	echo "* Installing vm agent-rpm"
 }
 function file_check {
-	echo "* Preparing"
+	echo "* Getting Kubearmor and Cilium script"
 	if [ -s /opt/vm-agent/k-script.sh ]
 	then
 		cd /opt/vm-agent/
 		echo "* installing kube-armor"
 		sudo bash ./k-script.sh
-		return
+		echo "success"
+		exit 0
 	else
-		sleep 2
+		sleep 3
 		file_check
 	fi
 }
@@ -28,19 +29,41 @@ function install_deb {
 	  exit 1
 	fi
 	a=$(wget -qO- ifconfig.me/ip)
-	echo "external_ip: "$a >> /opt/vm-agent/instance.yaml
+	echo "external_ip : $a" >> /opt/vm-agent/instance.yaml
 	b=$(hostname -I | awk '{print $1}')
-	echo "internal_ip: "$b >> /opt/vm-agent/instance.yaml
+	echo "internal_ip : $b" >> /opt/vm-agent/instance.yaml
 	export DEBIAN_FRONTEND=noninteractive
-	echo "* Installing  vm-agent"
+	FILE=/lib/systemd/system/vm-agent.service
+	if [ -f "$FILE" ]; then
+		echo "test"
+		sudo rm -f  /lib/systemd/system/vm-agent.service
+	fi
+	sudo touch /lib/systemd/system/vm-agent.service
+	#chmod 777 /lib/systemd/system/vm-agent.service
+	sudo ./vm-agent onboard
+	echo "* Executing  Vm-Agent"
+	echo "[Unit]
+Description=vm-agent
+After=network.target
+
+[Service]
+Type=simple
+Restart=always
+RestartSec=5s
+WorkingDirectory=/opt/vm-agent
+ExecStart=/opt/vm-agent/vm-agent
+
+[Install]
+WantedBy=multi-user.target" | sudo tee -a  /lib/systemd/system/vm-agent.service >> /dev/null
+	sudo systemctl unmask vm-agent.service
+	sudo systemctl enable vm-agent
 	chmod 777 vm-agent
-	sudo setsid ./vm-agent >log/service.log 2>&1 < log/service.log &
-	#./vm-agent&
+	sudo service vm-agent start
+	#sudo setsid ./vm-agent >log/service.log 2>&1 < log/service.log &
+	##./vm-agent&
 	#sudo screen -d -m vm-agent
         #./vm-agent
         file_check
-	echo "success"
-	#curl -o newfile https://raw.githubusercontent.com/manureddy7143/linuxscript/main/hello
 
 }
 function is_valid_value {
@@ -59,34 +82,69 @@ function is_int {
 	fi
 }
 function help {
-	echo "Usage: $(basename ${0}) "
-	echo "  -n | --vm_name <value> [-t | --tags <value>] [-ip | --ip_address <value>] \ "
-        echo "  [-ig | --instance_group <value>] [-vpc | --vpc <value>] \ "
-        echo "  [-h | --help]"
-        echo " Vm_name,Tags,Instance_group and Ip are mandatory"
+	echo "  Usage: sudo bash ./$(basename "${0}") [Options] values "
+	echo ''
+	echo "        Options                   Values                             Description"
+	echo ''
+	echo "      -n   | --vm_name           <value>               A user input for instance name "
+	echo "      -t   | --tags              <key>  <value>        labels that user want to add while onboarding"       
+    echo "      -ig  | --instance_group_id <value>               Instance_group_id generated from ui"
+	echo "      -hd  | --host_domain       <value>               Domain address of vm(control plane)"              
+	echo "      -tid | --tenant_id         <value>               Workspace_id generated from ui"
+	echo "      -vpc | --vpc               <value> (Optional)"
+    echo "      -h   | --help "
+	echo " "
+    echo "  NOTE: Vm_name,Tags,Instance_group_id,Tenant_id and Host_Domain are mandatory"
 	exit 1
 }
 #main
 set -e
-##Checking of help tag
-while [[ ${#} -lt 2 ]]
-do
-key="${1}"
 
-case ${key} in
-	-h|--help)
-		help
-		exit 1
-		;;
-	*)
-esac
-shift
+#Checking Mandatory Arguments
+echo "* Checking Mandatory Arguments"
+declare -a pages
+pages[0]='-tid;--tenant_id'
+pages[1]='-ig;--instance_group_id'
+pages[2]='-n;--vm_name'
+pages[3]='-t;--tags'
+pages[4]='-hd;--host_domain'
+for i  in "${pages[@]}"
+do
+   k=0
+   for j in $(seq 1 $#)
+   do
+     IFS=";" read -r -a arr <<< "${i}"
+     if [ "${!j}"  = "-h" ] || [ "${!j}"  = "--help" ]; then
+       	help
+		    exit 1
+     fi
+     #echo  "${!j}" and "${arr[0]}" and "${arr[1]}"
+     if [ "${!j}" = "${arr[0]}" ] || [ "${!j}" = "${arr[1]}" ]; then
+       k=1
+     fi
+   done
+   if [ $k -eq 0 ] ; then 
+      echo "Error: Bad Input"
+      help
+      exit 1
+   fi
 done
-#Check for manadatory fields
-if [[ ${#} -lt 8 ]]; then
-	echo "ERROR:  Vm_name,Tags,Instance_group and Ip are mandatory, use -h | --help for $(basename ${0}) Usage"
-	exit 1
+echo "done"
+#Creating necessary files
+FILE=/opt/vm-agent
+if [ -d "$FILE" ]; then
+	sudo rm -f /opt/vm-agent/instance.yaml
+	sudo rm -rd  /opt/vm-agent
 fi
+sudo mkdir /opt/vm-agent
+sudo touch /opt/vm-agent/instance.yaml
+chmod 777 /opt/vm-agent/instance.yaml
+sudo touch /opt/vm-agent/k-script.sh
+chmod 777 /opt/vm-agent/k-script.sh
+#moving files to opt folder
+cp vm-agent /opt/vm-agent/
+cp -R conf /opt/vm-agent/
+cp -R log  /opt/vm-agent/
 a=${#}
 #Check for mandatory field values
 while [[ ${#} -gt 0 ]]
@@ -97,16 +155,6 @@ case ${key} in
 	-n|--vm_name)
 		if is_valid_value "${2}"; then
 			VM_NAME="${2}"
-			FILE=/opt/vm-agent
-			if [ -d "$FILE" ]; then
-			    sudo rm -f /opt/vm-agent/instance.yaml
-			    sudo rm -rd  /opt/vm-agent
-			fi
-			sudo mkdir /opt/vm-agent
-			sudo touch /opt/vm-agent/instance.yaml
-			chmod 777 /opt/vm-agent/instance.yaml
-			sudo touch /opt/vm-agent/k-script.yaml
-			chmod 777 /opt/vm-agent/k-script.yaml
 			echo "instance_name: "$VM_NAME > /opt/vm-agent/instance.yaml
 			
 		else
@@ -119,12 +167,10 @@ case ${key} in
 		echo "labels: " >> /opt/vm-agent/instance.yaml
 		while [[ ${2} != *"-"* ]]
 		do
-			echo ${2}
 			if [[ ${2} != *"-"* ]]; then
-				TAGS="${2}"
 				if [[ ${3} != *"-"* ]]; then
-					echo "- key: "${2} >> /opt/vm-agent/instance.yaml
-					echo "  value: "${3} >> /opt/vm-agent/instance.yaml
+					echo "- key: ${2}" >> /opt/vm-agent/instance.yaml
+					echo "  value: ${3}" >> /opt/vm-agent/instance.yaml
 					shift
 					shift
 				else
@@ -139,10 +185,10 @@ case ${key} in
 		done
 		#shift
 		;;
-	-hn|--host_name)
+	-hd|--host_domain)
 		if is_valid_value "${2}"; then
 			IP="${2}"
-			echo "host: "$IP >> /opt/vm-agent/instance.yaml
+			echo "host: $IP" >> /opt/vm-agent/instance.yaml
 		else
 			echo "ERROR: no value provided for instance_group option, use -h | --help for $(basename ${0}) Usage"
 			exit 1
@@ -152,7 +198,7 @@ case ${key} in
 	-ig|--instance_group_id)
 		if is_valid_value "${2}"; then
 			INSTANCE_GROUP="${2}"
-			echo "group_id : "$INSTANCE_GROUP >> /opt/vm-agent/instance.yaml
+			echo "group_id : $INSTANCE_GROUP" >> /opt/vm-agent/instance.yaml
 		else
 			echo "ERROR: no value provided for instance_group option, use -h | --help for $(basename ${0}) Usage"
 			exit 1
@@ -162,7 +208,7 @@ case ${key} in
 	-tid|--tenant_id)
 		if is_int "${2}"; then
 			INSTANCE_GROUP="${2}"
-			echo "workspace_id : "$INSTANCE_GROUP >> /opt/vm-agent/instance.yaml
+			echo "workspace_id : $INSTANCE_GROUP" >> /opt/vm-agent/instance.yaml
 		else
 			echo "ERROR: no value provided for instance_group option, use -h | --help for $(basename ${0}) Usage"
 			exit 1
@@ -218,7 +264,7 @@ if [ -f /etc/debian_version ]; then
 
 		"Ubuntu")
 			if [ $VERSION -ge 10 ]; then
-				echo "operating_system: ubuntu" >> /opt/vm-agent/instance.yaml
+				echo "operating_system : ubuntu" >> /opt/vm-agent/instance.yaml
 				install_deb
 			else
 				unsupported
@@ -227,7 +273,7 @@ if [ -f /etc/debian_version ]; then
 
 		"LinuxMint")
 			if [ $VERSION -ge 9 ]; then
-				echo "operating_system: LinuxMint"$os >> /opt/vm-agent/instance.yaml
+				echo "operating_system : LinuxMint"$os >> /opt/vm-agent/instance.yaml
 				install_deb
 			else
 				unsupported
@@ -236,7 +282,7 @@ if [ -f /etc/debian_version ]; then
 
 		"Debian")
 			if [ $VERSION -ge 6 ]; then
-				echo "operating_system: Debian">> /opt/vm-agent/instance.yaml
+				echo "operating_system : Debian">> /opt/vm-agent/instance.yaml
 				install_deb
 			elif [[ $VERSION == *sid* ]]; then
 				install_deb
