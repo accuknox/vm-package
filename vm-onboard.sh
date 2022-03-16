@@ -165,10 +165,10 @@ case ${key} in
 		;;
 	-t|--tags)
 		echo "labels: " >> /opt/vm-agent/instance.yaml
-		while [[ ${2} != *"-"* ]]
+		while [[ ${2} != -* ]]
 		do
-			if [[ ${2} != *"-"* ]]; then
-				if [[ ${3} != *"-"* ]]; then
+			if [[ ${2} != -* ]]; then
+				if [[ ${3} != -* ]]; then
 					echo "- key: ${2}" >> /opt/vm-agent/instance.yaml
 					echo "  value: ${3}" >> /opt/vm-agent/instance.yaml
 					shift
