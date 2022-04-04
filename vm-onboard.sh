@@ -133,7 +133,6 @@ echo "done"
 #Creating necessary files
 FILE=/opt/vm-agent
 if [ -d "$FILE" ]; then
-	sudo rm -f /opt/vm-agent/instance.yaml
 	sudo rm -rd  /opt/vm-agent
 fi
 sudo mkdir /opt/vm-agent
