@@ -2,7 +2,7 @@
 # Application specific configurations
 application:
   name: vm-agent
-  user: ""
+  grpcport: 50006
 
 logging:
   level: ERROR
